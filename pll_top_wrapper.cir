@@ -1,0 +1,37 @@
+* pll_top_wrapper.cir  -- wrapper to run transistor-level PLL from repo
+.option numdgt=6
+
+* ---- Path to SkyWater 130nm models: EDIT THIS LINE ----
+.include /full/path/to/sky130/libs.tech/ngspice/sky130.lib.spice
+
+* ---- Include the block netlists from the repo (EDIT THESE FILENAMES) ----
+* Replace with actual filenames you found in the repo
+.include ./PFD.cir
+.include ./charge_pump.cir
+.include ./vco.cir
+.include ./freq_divider.cir
+.include ./loop_filter.cir
+* If the repo already has pll_top.cir, include it instead:
+* .include ./pll_top.cir
+
+* supply
+VDD vdd 0 DC 1.8
+
+* reference clock: (10 MHz example)
+Vref ref 0 PULSE(0 1.8 0 1n 1n 50n 100n)
+
+* instantiate PLL top if subckt exists
+* XPLL ref vout vdd 0 PLL_TOP
+
+* save important nodes
+.save V(ref) V(vout) V(vctrl) V(up) V(dn)
+
+.tran 0.1u 200u
+
+.control
+run
+plot V(ref) V(vout)+2 V(vctrl)+4 V(up)+6 V(dn)+8
+quit
+.endc
+
+.end
